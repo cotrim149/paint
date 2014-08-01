@@ -41,7 +41,6 @@
         
         UIPanGestureRecognizer *drag = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragGesture:)];
         drag.cancelsTouchesInView = NO;
-//        [longPress requireGestureRecognizerToFail:drag];
         [self addGestureRecognizer:drag];
     }
     return self;
@@ -50,21 +49,26 @@
 -(void)longPress:(UIGestureRecognizer*)gestureRecognizer{
     if(UIGestureRecognizerStateBegan == [gestureRecognizer state]){
         NSLog(@"Long press!");
-    }else{
-        [self dragGesture:gestureRecognizer];
+        CGPoint point = [self recognizePoint:gestureRecognizer];
+        
+        [self deleteLineWithPoint:point];
+        
+        [self setNeedsDisplay];
+
     }
 }
 
 -(void)dragGesture:(UIGestureRecognizer*)gestureRecognizer{
 
     NSLog(@"Dragging");
-    
+
     CGPoint actualPoint = [gestureRecognizer locationInView:self];
     CGFloat deltaX = actualPoint.x - _selectedLine.end.x;
     CGFloat deltaY = actualPoint.y - _selectedLine.end.y;
     
-    _selectedLine.end = CGPointMake(deltaX, deltaY);
-    
+    _selectedLine.end = CGPointMake(_selectedLine.end.x + deltaX, _selectedLine.end.y+deltaY);
+    _selectedLine.begin = CGPointMake(_selectedLine.begin.x +deltaX, _selectedLine.begin.y+deltaY);
+  
 
 
 }
@@ -108,18 +112,18 @@
 -(void)deleteLine:(id)sender{
     [self.finishedLines removeObject:self.selectedLine];
     self.selectedLine = nil;
-    
+    [self savePoints];
     [self setNeedsDisplay];
 }
 
 -(void)tap:(UITapGestureRecognizer*)gestureRecognizer{
     NSLog(@"Tap recognized");
     
-    CGPoint point = [self recognizePoint:gestureRecognizer];
-    
-    [self deleteLineWithPoint:point];
-    
-    [self setNeedsDisplay];
+//    CGPoint point = [self recognizePoint:gestureRecognizer];
+//    
+//    [self deleteLineWithPoint:point];
+//    
+//    [self setNeedsDisplay];
 }
 
 -(void)doubleTap:(UIGestureRecognizer*)gestureRecognizer{
